@@ -196,6 +196,12 @@ def test_get_chat_messages(session_id):
     
     return None
 
+def get_websocket_url(session_id, user_id):
+    """Get WebSocket URL from backend URL"""
+    # Extract the host and port from BACKEND_URL
+    backend_host = BACKEND_URL.replace('http://', '').replace('https://', '').replace('/api', '')
+    return f"ws://{backend_host}/ws/{session_id}/{user_id}"
+
 def test_websocket_chat(session_id, user_id):
     """Test WebSocket real-time chat"""
     if not session_id or not user_id:
