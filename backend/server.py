@@ -14,8 +14,16 @@ import base64
 from pydantic import BaseModel
 import logging
 
+# Import our IP protection and AI service managers
+from api_protection import initialize_protection, protection_manager
+from ai_service_manager import ai_service_manager
+
 # Load environment variables
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="AI Chat App", version="1.0.0")
 
