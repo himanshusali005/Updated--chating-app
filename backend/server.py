@@ -432,6 +432,11 @@ async def get_user_sessions(user_id: str):
         {"messages": 0}  # Exclude messages for performance
     ).to_list(length=50)
     
+    # Convert ObjectId to string for JSON serialization
+    for session in sessions:
+        if "_id" in session:
+            session["_id"] = str(session["_id"])
+    
     return {"sessions": sessions}
 
 @app.get("/api/chat/messages/{session_id}")
