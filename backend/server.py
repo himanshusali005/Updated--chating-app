@@ -171,10 +171,21 @@ REALISTIC_BOT_PROFILES = [
     }
 ]
 
-# AI Response Generation (Placeholder - will be replaced with real APIs)
+# AI Response Generation with IP Protection and Multiple APIs
 async def generate_ai_response(message: str, bot_profile: dict, context: List[dict] = None) -> str:
-    """Generate AI response based on bot personality and conversation context"""
+    """Generate AI response using protected APIs with fallback system"""
     
+    try:
+        # Use the AI service manager for protected API calls
+        response = await ai_service_manager.generate_response(message, bot_profile, context)
+        return response
+    except Exception as e:
+        logger.error(f"AI response generation failed: {str(e)}")
+        # Fallback to template responses
+        return await generate_template_response(message, bot_profile, context)
+
+async def generate_template_response(message: str, bot_profile: dict, context: List[dict] = None) -> str:
+    """Generate template response as ultimate fallback"""
     # Personality-based response templates
     responses_by_style = {
         "enthusiastic": [
