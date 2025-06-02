@@ -446,7 +446,13 @@ async def get_chat_messages(session_id: str):
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     
-    return {"messages": session.get("messages", [])}
+    # Convert any ObjectId fields to strings in messages if needed
+    messages = session.get("messages", [])
+    for message in messages:
+        if "_id" in message:
+            message["_id"] = str(message["_id"])
+    
+    return {"messages": messages}
 
 # Content Moderation (Placeholder)
 async def moderate_content(content: str, user_id: str) -> dict:
