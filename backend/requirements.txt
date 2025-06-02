@@ -10,11 +10,6 @@ pydantic==2.5.0
 motor==3.3.2
 python-dotenv==1.0.0
 bcrypt==4.1.1
-uuid==1.30
-datetime==5.3
-random2==1.0.1
 requests==2.31.0
 aiofiles==23.2.1
 pillow==10.1.0
-base64==2.1.0
-emergentintegrations
