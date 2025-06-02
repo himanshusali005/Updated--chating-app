@@ -436,6 +436,9 @@ async def get_user_sessions(user_id: str):
     for session in sessions:
         if "_id" in session:
             session["_id"] = str(session["_id"])
+        # Also convert any datetime objects to ISO strings
+        if "started_at" in session and hasattr(session["started_at"], "isoformat"):
+            session["started_at"] = session["started_at"].isoformat()
     
     return {"sessions": sessions}
 
