@@ -9,7 +9,9 @@ import os
 from datetime import datetime
 
 # Get the backend URL from environment variable or use default
-BACKEND_URL = "http://localhost:8001"
+BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "http://localhost:8001")
+if not BACKEND_URL.endswith("/api"):
+    BACKEND_URL = f"{BACKEND_URL}/api"
 
 # Test results tracking
 test_results = {
