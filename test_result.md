@@ -367,9 +367,7 @@ test_plan:
     - "Reset Failed Services Endpoint"
     - "Add Proxies Endpoint"
     - "API Keys Status Endpoint"
-    - "Get User Sessions"
-  stuck_tasks:
-    - "Get User Sessions"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
