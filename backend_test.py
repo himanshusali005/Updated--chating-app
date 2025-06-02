@@ -346,6 +346,124 @@ def test_content_moderation(session_id, user_id):
         log_test_result("Content Moderation", False, "Content moderation system failed to detect violation keywords")
         return False
 
+def test_protection_status():
+    """Test the protection status endpoint"""
+    try:
+        response = requests.get(f"{BACKEND_URL}/api/admin/protection-status")
+        
+        if response.status_code == 200:
+            data = response.json()
+            if "protection_enabled" in data:
+                protection_enabled = data["protection_enabled"]
+                message = f"Protection system is {'enabled' if protection_enabled else 'disabled'}"
+                
+                if protection_enabled and "protection_stats" in data and "ai_service_status" in data:
+                    stats = data["protection_stats"]
+                    service_status = data["ai_service_status"]
+                    message += f", {stats.get('proxies_available', 0)} proxies available"
+                    
+                log_test_result("Protection Status", True, message)
+                return data
+            else:
+                log_test_result("Protection Status", False, "Protection status response missing expected data")
+        else:
+            log_test_result("Protection Status", False, f"Protection status request failed with status code {response.status_code}")
+    except Exception as e:
+        log_test_result("Protection Status", False, f"Exception occurred: {str(e)}")
+    
+    return None
+
+def test_reset_failed_services():
+    """Test resetting failed AI services"""
+    try:
+        response = requests.post(f"{BACKEND_URL}/api/admin/reset-failed-services")
+        
+        if response.status_code == 200:
+            data = response.json()
+            if "message" in data and "reset" in data["message"].lower():
+                log_test_result("Reset Failed Services", True, "Successfully reset failed services")
+                return True
+            else:
+                log_test_result("Reset Failed Services", False, f"Unexpected response: {data}")
+        else:
+            # If protection is not enabled, this might return an error which is expected
+            if response.status_code == 400 or response.status_code == 404:
+                error_data = response.json()
+                if "error" in error_data and "not available" in error_data["error"].lower():
+                    log_test_result("Reset Failed Services", True, "Protection modules not available - expected response")
+                    return True
+            
+            log_test_result("Reset Failed Services", False, f"Reset failed services request failed with status code {response.status_code}")
+    except Exception as e:
+        log_test_result("Reset Failed Services", False, f"Exception occurred: {str(e)}")
+    
+    return False
+
+def test_add_proxies():
+    """Test adding premium proxies"""
+    try:
+        # Test proxies (these won't actually be used in the test environment)
+        test_proxies = [
+            "http://test:test@proxy1.example.com:8080",
+            "http://test:test@proxy2.example.com:8080"
+        ]
+        
+        response = requests.post(f"{BACKEND_URL}/api/admin/add-proxies", json=test_proxies)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if "message" in data and "added" in data["message"].lower():
+                log_test_result("Add Proxies", True, f"Successfully added test proxies: {data['message']}")
+                return True
+            else:
+                log_test_result("Add Proxies", False, f"Unexpected response: {data}")
+        else:
+            # If protection is not enabled, this might return an error which is expected
+            if response.status_code == 400 or response.status_code == 404:
+                error_data = response.json()
+                if "error" in error_data and "not available" in error_data["error"].lower():
+                    log_test_result("Add Proxies", True, "Protection modules not available - expected response")
+                    return True
+            
+            log_test_result("Add Proxies", False, f"Add proxies request failed with status code {response.status_code}")
+    except Exception as e:
+        log_test_result("Add Proxies", False, f"Exception occurred: {str(e)}")
+    
+    return False
+
+def test_api_keys_status():
+    """Test API keys status endpoint"""
+    try:
+        response = requests.get(f"{BACKEND_URL}/api/admin/api-keys-status")
+        
+        if response.status_code == 200:
+            data = response.json()
+            services = ['gemini', 'deepinfra', 'huggingface', 'openai']
+            
+            # Check if all expected services are in the response
+            all_services_present = all(service in data for service in services)
+            
+            if all_services_present:
+                configured_keys = sum(data[service].get("configured_keys", 0) for service in services)
+                message = f"API keys status retrieved successfully. {configured_keys} total keys configured."
+                log_test_result("API Keys Status", True, message)
+                return data
+            else:
+                log_test_result("API Keys Status", False, "API keys status response missing expected services")
+        else:
+            # If protection is not enabled, this might return an error which is expected
+            if response.status_code == 400 or response.status_code == 404:
+                error_data = response.json()
+                if "error" in error_data and "not available" in error_data["error"].lower():
+                    log_test_result("API Keys Status", True, "Protection modules not available - expected response")
+                    return True
+            
+            log_test_result("API Keys Status", False, f"API keys status request failed with status code {response.status_code}")
+    except Exception as e:
+        log_test_result("API Keys Status", False, f"Exception occurred: {str(e)}")
+    
+    return None
+
 def run_all_tests():
     """Run all backend tests in sequence"""
     print("\n===== STARTING BACKEND TESTS =====\n")
@@ -353,7 +471,15 @@ def run_all_tests():
     # Test health endpoint
     test_health_endpoint()
     
+    # Test IP protection system endpoints
+    print("\n----- Testing IP Protection System -----\n")
+    test_protection_status()
+    test_reset_failed_services()
+    test_add_proxies()
+    test_api_keys_status()
+    
     # Test user creation
+    print("\n----- Testing Core Chat Functionality -----\n")
     user_id = test_create_user()
     
     # Test bot profiles
