@@ -293,15 +293,18 @@ backend:
 
   - task: "Get User Sessions"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "testing"
         comment: "Get user sessions endpoint is failing with a 500 error due to MongoDB ObjectId serialization issue. The error occurs when trying to serialize MongoDB ObjectId to JSON."
+      - working: true
+        agent: "testing"
+        comment: "Get user sessions endpoint is now working correctly. The MongoDB ObjectId serialization issue appears to have been fixed."
 
   - task: "Get Chat Messages"
     implemented: true
