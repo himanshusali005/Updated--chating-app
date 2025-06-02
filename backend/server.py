@@ -14,9 +14,21 @@ import base64
 from pydantic import BaseModel
 import logging
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+import sys
+sys.path.append('/app/backend')
+
 # Import our IP protection and AI service managers
-from api_protection import initialize_protection, protection_manager
-from ai_service_manager import ai_service_manager
+try:
+    from api_protection import initialize_protection, protection_manager
+    from ai_service_manager import ai_service_manager
+    PROTECTION_ENABLED = True
+except ImportError as e:
+    logger.warning(f"Protection modules not available: {e}")
+    PROTECTION_ENABLED = False
 
 # Load environment variables
 load_dotenv()
