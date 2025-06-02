@@ -249,6 +249,59 @@ async def generate_template_response(message: str, bot_profile: dict, context: L
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
+@app.on_event("startup")
+async def startup_event():
+    """Initialize protection systems on startup"""
+    try:
+        # Initialize IP protection system
+        await initialize_protection(enable_proxy_rotation=True)
+        
+        # Load premium proxies if configured
+        premium_proxies = os.getenv("PREMIUM_PROXIES", "").split(",")
+        premium_proxies = [proxy.strip() for proxy in premium_proxies if proxy.strip()]
+        
+        if premium_proxies:
+            protection_manager.add_premium_proxies(premium_proxies)
+            logger.info(f"Loaded {len(premium_proxies)} premium proxies")
+        
+        logger.info("API protection system initialized successfully")
+        
+    except Exception as e:
+        logger.error(f"Failed to initialize protection systems: {str(e)}")
+
+@app.get("/api/admin/protection-status")
+async def get_protection_status():
+    """Get current API protection status"""
+    return {
+        "protection_stats": protection_manager.get_protection_stats(),
+        "ai_service_status": ai_service_manager.get_service_status()
+    }
+
+@app.post("/api/admin/reset-failed-services")
+async def reset_failed_services():
+    """Reset failed AI services for recovery"""
+    ai_service_manager.reset_failed_services()
+    return {"message": "Failed services reset successfully"}
+
+@app.post("/api/admin/add-proxies")
+async def add_premium_proxies(proxies: List[str]):
+    """Add premium proxy list"""
+    protection_manager.add_premium_proxies(proxies)
+    return {"message": f"Added {len(proxies)} premium proxies"}
+
+@app.get("/api/admin/api-keys-status")
+async def get_api_keys_status():
+    """Get status of configured API keys (without revealing actual keys)"""
+    status = {}
+    for service in ['gemini', 'deepinfra', 'huggingface', 'openai']:
+        keys = ai_service_manager.api_keys.get(service, [])
+        status[service] = {
+            "configured_keys": len(keys),
+            "has_keys": len(keys) > 0,
+            "sample_key_preview": keys[0][:8] + "..." if keys else "Not configured"
+        }
+    return status
+
 @app.post("/api/users/create")
 async def create_user(user: UserCreate):
     """Create new user profile"""
