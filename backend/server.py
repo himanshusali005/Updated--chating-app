@@ -188,9 +188,13 @@ async def generate_ai_response(message: str, bot_profile: dict, context: List[di
     """Generate AI response using protected APIs with fallback system"""
     
     try:
-        # Use the AI service manager for protected API calls
-        response = await ai_service_manager.generate_response(message, bot_profile, context)
-        return response
+        # Use the AI service manager for protected API calls if available
+        if PROTECTION_ENABLED:
+            response = await ai_service_manager.generate_response(message, bot_profile, context)
+            return response
+        else:
+            # Fallback to template responses if protection not available
+            return await generate_template_response(message, bot_profile, context)
     except Exception as e:
         logger.error(f"AI response generation failed: {str(e)}")
         # Fallback to template responses
