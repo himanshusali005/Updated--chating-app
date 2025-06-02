@@ -165,6 +165,14 @@ def test_get_user_sessions(user_id):
                 return data["sessions"]
             else:
                 log_test_result("Get User Sessions", False, "User sessions response missing expected data")
+        elif response.status_code == 500:
+            # Check if this is the known MongoDB ObjectId serialization issue
+            error_text = response.text
+            if "ObjectId" in error_text and "JSON" in error_text:
+                log_test_result("Get User Sessions", False, 
+                               "MongoDB ObjectId serialization issue detected. This is a known issue that needs fixing.")
+            else:
+                log_test_result("Get User Sessions", False, f"Getting user sessions failed with status code 500: {error_text}")
         else:
             log_test_result("Get User Sessions", False, f"Getting user sessions failed with status code {response.status_code}")
     except Exception as e:
