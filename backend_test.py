@@ -39,7 +39,7 @@ def log_test_result(test_name, passed, message=""):
 def test_health_endpoint():
     """Test the health check endpoint"""
     try:
-        response = requests.get(f"{BACKEND_URL}/api/health")
+        response = requests.get(f"{BACKEND_URL}/health")
         if response.status_code == 200:
             data = response.json()
             if "status" in data and data["status"] == "healthy":
@@ -65,7 +65,7 @@ def test_create_user():
             "language": "en"
         }
         
-        response = requests.post(f"{BACKEND_URL}/api/users/create", json=user_data)
+        response = requests.post(f"{BACKEND_URL}/users/create", json=user_data)
         
         if response.status_code == 200:
             data = response.json()
@@ -84,7 +84,7 @@ def test_create_user():
 def test_get_bot_profiles():
     """Test getting all bot profiles"""
     try:
-        response = requests.get(f"{BACKEND_URL}/api/bots/profiles")
+        response = requests.get(f"{BACKEND_URL}/bots/profiles")
         
         if response.status_code == 200:
             data = response.json()
@@ -107,7 +107,7 @@ def test_bot_matching(user_id):
         return None
     
     try:
-        response = requests.get(f"{BACKEND_URL}/api/bots/match/{user_id}")
+        response = requests.get(f"{BACKEND_URL}/bots/match/{user_id}")
         
         if response.status_code == 200:
             data = response.json()
@@ -131,7 +131,7 @@ def test_start_chat_session(user_id, bot_id):
         return None
     
     try:
-        response = requests.post(f"{BACKEND_URL}/api/chat/start?user_id={user_id}&bot_id={bot_id}")
+        response = requests.post(f"{BACKEND_URL}/chat/start?user_id={user_id}&bot_id={bot_id}")
         
         if response.status_code == 200:
             data = response.json()
@@ -155,7 +155,7 @@ def test_get_user_sessions(user_id):
         return None
     
     try:
-        response = requests.get(f"{BACKEND_URL}/api/chat/sessions/{user_id}")
+        response = requests.get(f"{BACKEND_URL}/chat/sessions/{user_id}")
         
         if response.status_code == 200:
             data = response.json()
@@ -179,7 +179,7 @@ def test_get_chat_messages(session_id):
         return None
     
     try:
-        response = requests.get(f"{BACKEND_URL}/api/chat/messages/{session_id}")
+        response = requests.get(f"{BACKEND_URL}/chat/messages/{session_id}")
         
         if response.status_code == 200:
             data = response.json()
@@ -243,7 +243,7 @@ def test_websocket_chat(session_id, user_id):
         ws.send(json.dumps(test_message2))
     
     # Create WebSocket connection
-    ws_url = f"ws://localhost:8001/ws/{session_id}/{user_id}"
+    ws_url = get_websocket_url(session_id, user_id)
     ws = websocket.WebSocketApp(ws_url,
                               on_open=on_open,
                               on_message=on_message,
@@ -322,7 +322,7 @@ def test_content_moderation(session_id, user_id):
         ws.send(json.dumps(test_message))
     
     # Create WebSocket connection
-    ws_url = f"ws://localhost:8001/ws/{session_id}/{user_id}"
+    ws_url = get_websocket_url(session_id, user_id)
     ws = websocket.WebSocketApp(ws_url,
                               on_open=on_open,
                               on_message=on_message,
@@ -357,7 +357,7 @@ def test_content_moderation(session_id, user_id):
 def test_protection_status():
     """Test the protection status endpoint"""
     try:
-        response = requests.get(f"{BACKEND_URL}/api/admin/protection-status")
+        response = requests.get(f"{BACKEND_URL}/admin/protection-status")
         
         if response.status_code == 200:
             data = response.json()
@@ -384,7 +384,7 @@ def test_protection_status():
 def test_reset_failed_services():
     """Test resetting failed AI services"""
     try:
-        response = requests.post(f"{BACKEND_URL}/api/admin/reset-failed-services")
+        response = requests.post(f"{BACKEND_URL}/admin/reset-failed-services")
         
         if response.status_code == 200:
             data = response.json()
@@ -416,7 +416,7 @@ def test_add_proxies():
             "http://test:test@proxy2.example.com:8080"
         ]
         
-        response = requests.post(f"{BACKEND_URL}/api/admin/add-proxies", json=test_proxies)
+        response = requests.post(f"{BACKEND_URL}/admin/add-proxies", json=test_proxies)
         
         if response.status_code == 200:
             data = response.json()
@@ -442,7 +442,7 @@ def test_add_proxies():
 def test_api_keys_status():
     """Test API keys status endpoint"""
     try:
-        response = requests.get(f"{BACKEND_URL}/api/admin/api-keys-status")
+        response = requests.get(f"{BACKEND_URL}/admin/api-keys-status")
         
         if response.status_code == 200:
             data = response.json()
